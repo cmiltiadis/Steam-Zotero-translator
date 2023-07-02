@@ -1,8 +1,10 @@
 # Zotero Translator for Steam games
 This is a citation metadata grabber for Steam games using Zotero (a free and open source reference manager), which will scrape the necessary metadata required to reference/cite a given Steam game. 
 
-The matter of referencing videogames in literature is neither trivial nor standardized  [(Gualeni et al. 2019)](#notes). Some (older) cases include videogame references in separate "*Ludography*" sections following different conventions than standard citations. Others include them in a bibliography following their own conventions (see for example game studies publications such as [Game Studies Journal](https://gamestudies.org/2301/submission_guidelines#GSCitation) and [DiGRA (2023)](http://www.digra.org/call-for-papers-digra-2023-international-conference/)). This tool supports the latter version, and should work for most applications. 
-However, depending on citation requirements additional fields might be required (such as the precise version of the game played), which can be added manually in Zotero. Given also that the abovementioned venues do not provide a precise citation style (as in a CSL file), one might need to adapt their game reference in their text document. 
+The matter of referencing videogames in literature is neither trivial nor standardized  [(Gualeni et al. 2019)](#notes). Some (older) cases include videogame references in separate "*Ludography*" sections following different conventions than standard citations. Others include them in a bibliography following their own conventions (see for example game studies publications such as [Game Studies Journal](https://gamestudies.org/2301/submission_guidelines#GSCitation) and [DiGRA (2023)](http://www.digra.org/call-for-papers-digra-2023-international-conference/)). This tool supports the latter version, and should work for most applications. However, given that the abovementioned venues do not provide a precise citation style (as in a CSL file), one might need to adapt their game reference in their text document. 
+Furthermore, depending on citation requirements additional fields might be required, which can be added manually in Zotero. For example: 
+-  the precise version of the game played,
+-  the platform that the game was played, or the platforms for which the game is available (depending on what is required). 
 
 Issues: 
 - It does not differentiate soundtracks or films as non-games, since these are not clearly marked as such. However, this is not a trivial problem given that (a) this is primarily aiming game citations, (b) soundtracks and films are not that many on Steam, and more importantly (c) Steam does not provide the appropriate metadata to cite such artifacts (i.e. composer, director, etc.). 
@@ -58,10 +60,10 @@ Install:
 Sample references (using Chicago Manual of Style 17th ed.): 
 - Arsi ‘Hakita’ Patala. ‘ULTRAKILL’. Windows. New Blood Interactive, 3 September 2020. https://store.steampowered.com/app/1229490/ULTRAKILL/.
 - Crystal Dynamics, Eidos-Montréal, Feral Interactive (Mac), Feral Interactive (Linux), and Nixxes. ‘Rise of the Tomb Raider™’. Windows,macOS,SteamOS + Linux. Crystal Dynamics, Feral Interactive (Mac), Feral Interactive (Linux), 9 February 2016. https://store.steampowered.com/app/391220/Rise_of_the_Tomb_Raider/.
+- FromSoftware Inc. ‘ELDEN RING’. Windows. FromSoftware Inc., Bandai Namco Entertainment, 25 February 2022. https://store.steampowered.com/app/1245620/ELDEN_RING/.
 - id Software. ‘DOOM (1993)’. Windows. id Software, 30 April 1995. https://store.steampowered.com/app/2280/DOOM_1993/.
 - ———. ‘DOOM Eternal’. Windows. Bethesda Softworks, 20 March 2020. https://store.steampowered.com/app/782330/DOOM_Eternal/.
 - Valve, and Hidden Path Entertainment. ‘Counter-Strike: Global Offensive’. Windows,macOS,SteamOS + Linux. Valve, 21 August 2012. https://store.steampowered.com/app/730/CounterStrike_Global_Offensive/.
-
 
 # Notes 
 - Gualeni, Stefano, Riccardo Fassone, and Jonas Linderoth. ‘How to Reference a Digital Game’. In Proceedings of DiGRA 2019: Game, Play and the Emerging Ludo-Mix, 17. Kyoto: DiGRA, 2019. http://www.digra.org/digital-library/publications/how-to-reference-a-digital-game/.
