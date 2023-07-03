@@ -1,7 +1,7 @@
 {
 	"translatorID": "2d950ca4-583a-46e0-9e96-734914a94ccd",
 	"label": "Steam",
-	"creator": "Constantinos Miltiadis",
+	"creator": "Constantinos Miltiadis <3",
 	"target": "https://store.steampowered.com/",
 	"minVersion": "5.0",
 	"maxVersion": "",
@@ -9,90 +9,118 @@
 	"inRepository": true,
 	"translatorType": 4,
 	"browserSupport": "gcsibv",
-	"lastUpdated": "2023-07-03 15:40:22"
+	"lastUpdated": "2023-07-03 23:51:49"
 }
 
 /*
-    ***** BEGIN LICENSE BLOCK *****
+	***** BEGIN LICENSE BLOCK *****
 
-    Copyright © 2023 Constantinos Miltiadis <3
+	Copyright © 2023 Constantinos Miltiadis <3
 
-    This file is part of Zotero.
+	This file is part of Zotero.
 
-    Zotero is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	Zotero is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Affero General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    Zotero is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-    GNU Affero General Public License for more details.
+	Zotero is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU Affero General Public License
-    along with Zotero. If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU Affero General Public License
+	along with Zotero. If not, see <http://www.gnu.org/licenses/>.
 
-    ***** END LICENSE BLOCK *****
+	***** END LICENSE BLOCK *****
+*/
+
+/*
+- Translator does not provision for 'http' only for 'https' -- Since Steam is a web shop it's assumed it will always comply by secure 'https'
+- For URLs that concern hardware (e.g. Valve Index), not games, the scrape function escapes before saving. 
+- Soundtracks and films, will be saved as games ('computerProgram'). 
+  There is no easy way to distinguish them. Bare in mind however,
+  that the metadata fields created (besides the type) are not correct/adequate for citing such works.
 */
 
 /*
 tests:
-- games with "coming soon" release date will save that in the date field. E.g. https://store.steampowered.com/app/1068500/Multiverse_Designer/
-- multiplatform: https://store.steampowered.com/app/730/CounterStrike_Global_Offensive/
+- Single games
+https://store.steampowered.com/app/1229490/ULTRAKILL/
+- multi-platform: 
+https://store.steampowered.com/app/730/CounterStrike_Global_Offensive/
+- release date "coming soon" (will be saved as 'coming soon'): 
+https://store.steampowered.com/app/1068500/Multiverse_Designer/
+- Publisher
+https://store.steampowered.com/publisher/NewBlood
+- Developer (with hardware items)
+https://store.steampowered.com/developer/valve
+- Search: 
+https://store.steampowered.com/search/?term=ultrakill
+https://store.steampowered.com/search/?term=rpg
+- Troubleshooting 
+- works in Zotero, not in Scaffold
+https://store.steampowered.com/app/1245620/ELDEN_RING/
+- multi-publisher / works in Zotero fails in Scaffold
+https://store.steampowered.com/app/391220/Rise_of_the_Tomb_Raider/
+
 */
 
+/*
+Coding refs: 
+- Zotero Translator overview: https://www.zotero.org/support/dev/translators
+- Zotero coding reference: https://www.zotero.org/support/dev/translators/coding
+- ZoteroUtilities: https://github.com/zotero/utilities/blob/master/utilities.js
+- Citoid tutorial: https://www.mediawiki.org/wiki/Citoid/Creating_Zotero_translators#Write_test_cases
+- Zotero translator wiki: https://github.com/zotero/translator
+*/
+
+//check url patterns with multiple entries
+//search 
 function isSearch(url){
 	return url.includes('/search/'); 
 }
+//developer or publisher page
 function isDevPub(url){
 	return (url.includes('/developer/') || url.includes('/publisher/')); 
 }
+//search, dev, or publisher page 
 function isMultiple(url){
 	return (isSearch(url) || isDevPub(url)) ;  
 }
 
 function detectWeb(doc, url) {
-	// TODO: adjust the logic here
-	if (url.includes('/app/')) {
+	if (url.includes('/app/')) {// games include '/app/' in their url
 		return 'computerProgram';
 	}
-	else if (isMultiple(url)){
+	if (isMultiple(url)){
 		if (getSearchResults(doc, true)){
 			return 'multiple'; 
-		}else {
-			return false; 
 		}
 	}
 	return false;
 }
 
 function getSearchResults(doc, checkOnly) {
-	// Zotero.debug("MULTI");
-
 	var items = {};
 	var found = false;
 
-
-	if (isSearch(doc.URL)){
+	if (isSearch(doc.URL)){ // for search results
 		// Zotero.debug("Search");
-
-		var rows = doc.querySelectorAll('.search_result_row'); 
+		var rows = doc.querySelectorAll('.search_result_row[href*="/app/"]'); 
 		
 		for (let row of rows){
 			let href =row.href; 
 			if (href in items) continue; //omit duplicates
-			if (href.includes('/app/')==false) continue; //remove bundles
 			let title = row.querySelector('span.title'); 
 			title = title.textContent; 
-			// Zotero.debug(title+" -- "+ href); 
-
 			if (!title || !href) continue; 
 			if (checkOnly) return true; 
 			found  =true; 
 			items [href]= title; 
 		}
 
-	}else if (isDevPub(doc.URL)){
+	}else if (isDevPub(doc.URL)){  // for publisher/ developer page 
 		// Zotero.debug("DEV/PUB"); 
 		var rows = doc.querySelectorAll('.recommendation'); 
 
@@ -102,7 +130,7 @@ function getSearchResults(doc, checkOnly) {
 
 			if (href in items) continue; //omit duplicates/demos
 			let title =row.querySelector('.color_created'); 
-			title =ZU.trimInternal(title.textContent);
+			title =ZU.trimInternal(title.textContent);//cleanup 
 
 			if (!title || !href) continue; 
 			if (checkOnly) return true; 
@@ -113,32 +141,46 @@ function getSearchResults(doc, checkOnly) {
 	return found ? items : false;
 }
 
-async function doWeb(doc, url) {
-	if (detectWeb(doc, url) == 'multiple') {
-		let items = await Zotero.selectItems(getSearchResults(doc, false));
-		if (!items) return;
-		for (let url of Object.keys(items)) {
-			await scrape(await requestDocument(url));
-		}
+function doWeb(doc, url) {
+	if (detectWeb(doc, url) == "multiple") {
+		Zotero.selectItems(getSearchResults(doc, false), (items) => {
+			if (!items) {
+				return true;
+			}
+			const articles = [];
+			for (const i in items) {
+				articles.push(i);
+			}
+			ZU.processDocuments(articles, scrape);
+			return true;
+		});
 	}
 	else {
-		await scrape(doc, url);
+		scrape(doc, url);
 	}
 }
 
-
-async function scrape(doc, url = doc.location.href) {
-	let translator = Zotero.loadTranslator('web');
-	// Embedded Metadata
-	translator.setTranslator('951c027d-74ac-47d4-a107-9c3069ab7b48');
-	translator.setDocument(doc);
-
+function scrape(doc, url){
+	var item = new Z.Item("computerProgram"); 
 	//title
 	var title =doc.querySelector('#appHubAppName').textContent; 
 	//date
 	var date = text(doc,'div.date'); 
+	//game description as abstract 
+	let description = text (doc, 'div.game_description_snippet') ; 
+	// //DEV (alternate)
+	// var bn = doc.querySelectorAll('#developers_list > a'); 
+	// for (b of bn ){
+	// 	Zotero.debug("DEV:"+ b.textContent); //this can get Devs
+	// }
+	// // Zotero.debug(bn.textContent); 
+	// var pub = doc.querySelectorAll('div.summary.column > a'); 
+	// for (p of pub){
+	// 	Zotero.debug("Pub:"+ p.textContent); 
+	// }
+
 	//dev / publisher 
-	var credits = doc.querySelectorAll('.glance_ctn_responsive_left > .dev_row'); 
+	var credits = doc.querySelectorAll('.glance_ctn_responsive_left > .dev_row '); 
 	if (credits.length==0){
 		Zotero.debug("Item is not game (maybe hardware?)"); 
 		return; 
@@ -148,11 +190,19 @@ async function scrape(doc, url = doc.location.href) {
 	creators=creators.split(',');
 	var cleanCreators= []; 
 	for (let creator of creators){
-		cleanCreators.push(ZU.cleanAuthor(creator, 'author',true ));
+		cleanCreators.push(ZU.cleanAuthor(creator, 'programmer',true ));
 	}
-	//publisher 
+	//publisher
 	var publishers= ZU.trimInternal(credits[1].textContent).substring(10); 
-	//platforms (get platform tabs if they are there)
+	//TAGS (user tags)
+	let tags= doc.querySelectorAll('a.app_tag'); 
+	var cleanTags=[];  
+	for (let tag of tags){
+		tag = ZU.trimInternal(tag.text);
+		cleanTags.push(tag); 
+	}
+	
+	//platforms (get platform tabs if they are there, else 'Windows')
 	var platforms= doc.querySelectorAll('div.sysreq_tab'); 
 	var cleanPlatforms = []; 
 	if (platforms.length==0){ cleanPlatforms="Windows";}
@@ -162,40 +212,196 @@ async function scrape(doc, url = doc.location.href) {
 		}
 		cleanPlatforms=cleanPlatforms.toString(); 
 	}
-	//TAGS
-	let tags= doc.querySelectorAll('a.app_tag'); 
-	var ntags=[];  
-	for (let tag of tags){
-		tag = ZU.trimInternal(tag.text);
-		ntags.push(tag); 
-	}
-	
-	translator.setHandler('itemDone', (_obj, item) => {
-		item.title=title; 
-		item.date=date; 
-		item.creators=cleanCreators; 
-		item.company= publishers; 
-		item.attachments=[];//don't save snapshots 
-		item.tags=ntags; 
-		item.system= cleanPlatforms; 
-		item.complete();
-	});
 
-	let em = await translator.getTranslatorObject();
-	em.itemType = 'computerProgram';
-	// TODO map additional meta tags here, or delete completely
-	// em.addCustomFields({
-	// 	'twitter:description': 'abstractNote'
-	// });
-	await em.doWeb(doc, url);
+	item.title=title; 
+	item.tags=cleanTags; 
+	item.creators= cleanCreators; 
+	item.date=date; 
+	item.abstractNote=description; 
+	item.company=publishers; 
+	item.system= cleanPlatforms; 
+	item.url= url; 
+	item.libraryCatalog="store.steampowered.com"; 
+	item.complete(); 
 }
+
 /** BEGIN TEST CASES **/
 var testCases = [
 	{
 		"type": "web",
-		"url": "https://store.steampowered.com/search/?term=ultrakill",
-		"detectedItemType": "multiple",
-		"items": "multiple"
+		"url": "https://store.steampowered.com/app/1229490/ULTRAKILL/",
+		"detectedItemType": "computerProgram",
+		"items": [
+			{
+				"itemType": "computerProgram",
+				"title": "ULTRAKILL",
+				"creators": [
+					{
+						"lastName": "Arsi \"Hakita\" Patala",
+						"creatorType": "programmer"
+					}
+				],
+				"date": "3 Sep, 2020",
+				"abstractNote": "ULTRAKILL is a fast-paced ultraviolent retro FPS combining the skill-based style scoring from character action games with unadulterated carnage inspired by the best shooters of the '90s. Rip apart your foes with varied destructive weapons and shower in their blood to regain your health.",
+				"company": "New Blood Interactive",
+				"libraryCatalog": "store.steampowered.com",
+				"system": "Windows",
+				"url": "https://store.steampowered.com/app/1229490/ULTRAKILL/",
+				"attachments": [],
+				"tags": [
+					{
+						"tag": "3D"
+					},
+					{
+						"tag": "Action"
+					},
+					{
+						"tag": "Arena Shooter"
+					},
+					{
+						"tag": "Blood"
+					},
+					{
+						"tag": "Character Action Game"
+					},
+					{
+						"tag": "Cyberpunk"
+					},
+					{
+						"tag": "Difficult"
+					},
+					{
+						"tag": "Early Access"
+					},
+					{
+						"tag": "FPS"
+					},
+					{
+						"tag": "Fast-Paced"
+					},
+					{
+						"tag": "First-Person"
+					},
+					{
+						"tag": "Old School"
+					},
+					{
+						"tag": "Retro"
+					},
+					{
+						"tag": "Robots"
+					},
+					{
+						"tag": "Sci-fi"
+					},
+					{
+						"tag": "Shooter"
+					},
+					{
+						"tag": "Silent Protagonist"
+					},
+					{
+						"tag": "Singleplayer"
+					},
+					{
+						"tag": "Spectacle fighter"
+					},
+					{
+						"tag": "Stylized"
+					}
+				],
+				"notes": [],
+				"seeAlso": []
+			}
+		]
+	},
+	{
+		"type": "web",
+		"url": "https://store.steampowered.com/app/1068500/Multiverse_Designer/",
+		"detectedItemType": "computerProgram",
+		"items": [
+			{
+				"itemType": "computerProgram",
+				"title": "Multiverse Designer",
+				"creators": [
+					{
+						"lastName": "Toopan Games",
+						"creatorType": "programmer"
+					}
+				],
+				"date": "Coming soon",
+				"abstractNote": "Multiverse Designer is a 3D narrative engine and virtual tabletop to power your tabletop RPG games and help you create amazing stories in unique settings. Gather your friends, create awe-inspiring 3D setpieces, control characters and NPCs and throw virtual dice to decide the fate of your players!",
+				"company": "Toopan Games",
+				"libraryCatalog": "store.steampowered.com",
+				"system": "Windows",
+				"url": "https://store.steampowered.com/app/1068500/Multiverse_Designer/",
+				"attachments": [],
+				"tags": [
+					{
+						"tag": "3D"
+					},
+					{
+						"tag": "Board Game"
+					},
+					{
+						"tag": "CRPG"
+					},
+					{
+						"tag": "Character Customization"
+					},
+					{
+						"tag": "Dark Fantasy"
+					},
+					{
+						"tag": "Dragons"
+					},
+					{
+						"tag": "Dungeon Crawler"
+					},
+					{
+						"tag": "Fantasy"
+					},
+					{
+						"tag": "Game Development"
+					},
+					{
+						"tag": "Grid-Based Movement"
+					},
+					{
+						"tag": "Level Editor"
+					},
+					{
+						"tag": "Magic"
+					},
+					{
+						"tag": "Multiplayer"
+					},
+					{
+						"tag": "Mystery Dungeon"
+					},
+					{
+						"tag": "RPG"
+					},
+					{
+						"tag": "Simulation"
+					},
+					{
+						"tag": "Tabletop"
+					},
+					{
+						"tag": "Tactical RPG"
+					},
+					{
+						"tag": "Third Person"
+					},
+					{
+						"tag": "Utilities"
+					}
+				],
+				"notes": [],
+				"seeAlso": []
+			}
+		]
 	},
 	{
 		"type": "web",
@@ -208,11 +414,11 @@ var testCases = [
 				"creators": [
 					{
 						"lastName": "Valve",
-						"creatorType": "author"
+						"creatorType": "programmer"
 					},
 					{
 						"lastName": "Hidden Path Entertainment",
-						"creatorType": "author"
+						"creatorType": "programmer"
 					}
 				],
 				"date": "21 Aug, 2012",
@@ -292,185 +498,21 @@ var testCases = [
 	},
 	{
 		"type": "web",
-		"url": "https://store.steampowered.com/app/1068500/Multiverse_Designer/",
-		"detectedItemType": "computerProgram",
-		"items": [
-			{
-				"itemType": "computerProgram",
-				"title": "Multiverse Designer",
-				"creators": [
-					{
-						"lastName": "Toopan Games",
-						"creatorType": "author"
-					}
-				],
-				"date": "Coming soon",
-				"abstractNote": "Multiverse Designer is a 3D narrative engine and virtual tabletop to power your tabletop RPG games and help you create amazing stories in unique settings. Gather your friends, create awe-inspiring 3D setpieces, control characters and NPCs and throw virtual dice to decide the fate of your players!",
-				"company": "Toopan Games",
-				"libraryCatalog": "store.steampowered.com",
-				"system": "Windows",
-				"url": "https://store.steampowered.com/app/1068500/Multiverse_Designer/",
-				"attachments": [],
-				"tags": [
-					{
-						"tag": "3D"
-					},
-					{
-						"tag": "Board Game"
-					},
-					{
-						"tag": "CRPG"
-					},
-					{
-						"tag": "Character Customization"
-					},
-					{
-						"tag": "Dark Fantasy"
-					},
-					{
-						"tag": "Dragons"
-					},
-					{
-						"tag": "Dungeon Crawler"
-					},
-					{
-						"tag": "Fantasy"
-					},
-					{
-						"tag": "Game Development"
-					},
-					{
-						"tag": "Grid-Based Movement"
-					},
-					{
-						"tag": "Level Editor"
-					},
-					{
-						"tag": "Magic"
-					},
-					{
-						"tag": "Multiplayer"
-					},
-					{
-						"tag": "Mystery Dungeon"
-					},
-					{
-						"tag": "RPG"
-					},
-					{
-						"tag": "Simulation"
-					},
-					{
-						"tag": "Tabletop"
-					},
-					{
-						"tag": "Tactical RPG"
-					},
-					{
-						"tag": "Third Person"
-					},
-					{
-						"tag": "Utilities"
-					}
-				],
-				"notes": [],
-				"seeAlso": []
-			}
-		]
-	},
-	{
-		"type": "web",
 		"url": "https://store.steampowered.com/publisher/NewBlood",
 		"detectedItemType": "multiple",
 		"items": "multiple"
 	},
 	{
 		"type": "web",
-		"url": "https://store.steampowered.com/app/1229490/ULTRAKILL/",
-		"detectedItemType": "computerProgram",
-		"items": [
-			{
-				"itemType": "computerProgram",
-				"title": "ULTRAKILL",
-				"creators": [
-					{
-						"lastName": "Arsi \"Hakita\" Patala",
-						"creatorType": "author"
-					}
-				],
-				"date": "3 Sep, 2020",
-				"abstractNote": "ULTRAKILL is a fast-paced ultraviolent retro FPS combining the skill-based style scoring from character action games with unadulterated carnage inspired by the best shooters of the '90s. Rip apart your foes with varied destructive weapons and shower in their blood to regain your health.",
-				"company": "New Blood Interactive",
-				"libraryCatalog": "store.steampowered.com",
-				"system": "Windows",
-				"url": "https://store.steampowered.com/app/1229490/ULTRAKILL/",
-				"attachments": [],
-				"tags": [
-					{
-						"tag": "3D"
-					},
-					{
-						"tag": "Action"
-					},
-					{
-						"tag": "Arena Shooter"
-					},
-					{
-						"tag": "Blood"
-					},
-					{
-						"tag": "Character Action Game"
-					},
-					{
-						"tag": "Cyberpunk"
-					},
-					{
-						"tag": "Difficult"
-					},
-					{
-						"tag": "Early Access"
-					},
-					{
-						"tag": "FPS"
-					},
-					{
-						"tag": "Fast-Paced"
-					},
-					{
-						"tag": "First-Person"
-					},
-					{
-						"tag": "Old School"
-					},
-					{
-						"tag": "Retro"
-					},
-					{
-						"tag": "Robots"
-					},
-					{
-						"tag": "Sci-fi"
-					},
-					{
-						"tag": "Shooter"
-					},
-					{
-						"tag": "Silent Protagonist"
-					},
-					{
-						"tag": "Singleplayer"
-					},
-					{
-						"tag": "Spectacle fighter"
-					},
-					{
-						"tag": "Stylized"
-					}
-				],
-				"notes": [],
-				"seeAlso": []
-			}
-		]
+		"url": "https://store.steampowered.com/developer/valve",
+		"detectedItemType": "multiple",
+		"items": "multiple"
+	},
+	{
+		"type": "web",
+		"url": "https://store.steampowered.com/search/?term=rpg",
+		"detectedItemType": "multiple",
+		"items": "multiple"
 	}
 ]
 /** END TEST CASES **/
