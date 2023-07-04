@@ -9,7 +9,7 @@
 	"inRepository": true,
 	"translatorType": 4,
 	"browserSupport": "gcsibv",
-	"lastUpdated": "2023-07-03 23:51:49"
+	"lastUpdated": "2023-07-04 12:26:09"
 }
 
 /*
@@ -36,6 +36,7 @@
 */
 
 /*
+Documentation at: https://github.com/cmiltiadis/Steam-Zotero-translator
 - Translator does not provision for 'http' only for 'https' -- Since Steam is a web shop it's assumed it will always comply by secure 'https'
 - For URLs that concern hardware (e.g. Valve Index), not games, the scrape function escapes before saving. 
 - Soundtracks and films, will be saved as games ('computerProgram'). 
@@ -44,7 +45,7 @@
 */
 
 /*
-tests:
+Tests:
 - Single games
 https://store.steampowered.com/app/1229490/ULTRAKILL/
 - multi-platform: 
@@ -82,7 +83,7 @@ function isSearch(url){
 }
 //developer or publisher page
 function isDevPub(url){
-	return (url.includes('/developer/') || url.includes('/publisher/')); 
+	return (url.includes('/developer/') || url.includes('/publisher/') ); 
 }
 //search, dev, or publisher page 
 function isMultiple(url){
@@ -106,9 +107,7 @@ function getSearchResults(doc, checkOnly) {
 	var found = false;
 
 	if (isSearch(doc.URL)){ // for search results
-		// Zotero.debug("Search");
 		var rows = doc.querySelectorAll('.search_result_row[href*="/app/"]'); 
-		
 		for (let row of rows){
 			let href =row.href; 
 			if (href in items) continue; //omit duplicates
@@ -121,9 +120,7 @@ function getSearchResults(doc, checkOnly) {
 		}
 
 	}else if (isDevPub(doc.URL)){  // for publisher/ developer page 
-		// Zotero.debug("DEV/PUB"); 
 		var rows = doc.querySelectorAll('.recommendation'); 
-
 		for (let row of rows){
 			let href = row.querySelector('a[href*="/app/"]'); 
 			href=href.href; 
@@ -161,40 +158,31 @@ function doWeb(doc, url) {
 }
 
 function scrape(doc, url){
-	var item = new Z.Item("computerProgram"); 
-	//title
+	//Title
 	var title =doc.querySelector('#appHubAppName').textContent; 
-	//date
+	//Release date
 	var date = text(doc,'div.date'); 
-	//game description as abstract 
+	//game description for abstract 
 	let description = text (doc, 'div.game_description_snippet') ; 
-	// //DEV (alternate)
-	// var bn = doc.querySelectorAll('#developers_list > a'); 
-	// for (b of bn ){
-	// 	Zotero.debug("DEV:"+ b.textContent); //this can get Devs
-	// }
-	// // Zotero.debug(bn.textContent); 
-	// var pub = doc.querySelectorAll('div.summary.column > a'); 
-	// for (p of pub){
-	// 	Zotero.debug("Pub:"+ p.textContent); 
-	// }
-
-	//dev / publisher 
-	var credits = doc.querySelectorAll('.glance_ctn_responsive_left > .dev_row '); 
-	if (credits.length==0){
+	//Developers (creators) 
+	var devs = doc.querySelectorAll('#developers_list > a'); 
+	if (devs.length==0){
 		Zotero.debug("Item is not game (maybe hardware?)"); 
 		return; 
 	}
-	// devs
-	var creators =ZU.trimInternal( credits[0].textContent).substring(10); 
-	creators=creators.split(',');
-	var cleanCreators= []; 
-	for (let creator of creators){
-		cleanCreators.push(ZU.cleanAuthor(creator, 'programmer',true ));
+	var cleanDevs=[]; 
+	for (dev of devs){
+		cleanDevs.push(ZU.cleanAuthor(dev.textContent, 'programmer',true ));
 	}
-	//publisher
-	var publishers= ZU.trimInternal(credits[1].textContent).substring(10); 
-	//TAGS (user tags)
+	//Publishers (comma separated) 
+	var pubs = doc.querySelectorAll('.glance_ctn_responsive_left > .dev_row')[1]; 
+	pubs =pubs.querySelectorAll('a'); 
+	var cleanPubs=[]; 
+	for (let pub of pubs){
+		cleanPubs.push(pub.textContent); 
+	}
+	cleanPubs= cleanPubs.join(', '); 
+    //Tags (user tags)
 	let tags= doc.querySelectorAll('a.app_tag'); 
 	var cleanTags=[];  
 	for (let tag of tags){
@@ -202,7 +190,7 @@ function scrape(doc, url){
 		cleanTags.push(tag); 
 	}
 	
-	//platforms (get platform tabs if they are there, else 'Windows')
+	//Platforms (get platform tabs if they are there, else 'Windows')
 	var platforms= doc.querySelectorAll('div.sysreq_tab'); 
 	var cleanPlatforms = []; 
 	if (platforms.length==0){ cleanPlatforms="Windows";}
@@ -210,15 +198,16 @@ function scrape(doc, url){
 		for (let platform of platforms){
 			cleanPlatforms.push(ZU.trimInternal(platform.textContent)); 
 		}
-		cleanPlatforms=cleanPlatforms.toString(); 
+		cleanPlatforms=cleanPlatforms.join(', '); 
 	}
-
+	//create & assemble object 
+	var item = new Z.Item("computerProgram"); 
 	item.title=title; 
 	item.tags=cleanTags; 
-	item.creators= cleanCreators; 
+	item.creators= cleanDevs; 
 	item.date=date; 
 	item.abstractNote=description; 
-	item.company=publishers; 
+	item.company=cleanPubs; 
 	item.system= cleanPlatforms; 
 	item.url= url; 
 	item.libraryCatalog="store.steampowered.com"; 
@@ -426,7 +415,7 @@ var testCases = [
 				"company": "Valve",
 				"libraryCatalog": "store.steampowered.com",
 				"shortTitle": "Counter-Strike",
-				"system": "Windows,macOS,SteamOS + Linux",
+				"system": "Windows, macOS, SteamOS + Linux",
 				"url": "https://store.steampowered.com/app/730/CounterStrike_Global_Offensive/",
 				"attachments": [],
 				"tags": [
