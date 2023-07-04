@@ -26,9 +26,9 @@ Furthermore, depending on referencing instructions additional fields might be re
   ![image](https://github.com/cmiltiadis/Steam-Zotero-translator/assets/12499359/88b692ea-d37e-4bb5-9686-e6784cd97218)
   ![image](https://github.com/cmiltiadis/Steam-Zotero-translator/assets/12499359/397d0114-4a3a-4fd8-92eb-98d6434fc481)
   ![image](https://github.com/cmiltiadis/Steam-Zotero-translator/assets/12499359/8d03faab-5fce-4a8d-a5b6-b290fdac03ef)
-- Below is a case of search results for the term `ultrakill` (note that the second entry (Ultrakill demo) is omitted since it leads to the same URL as the first). 
+- Search results for the term `ultrakill` (note that the second entry (Ultrakill demo) is omitted since it leads to the same URL as the first). 
   ![image](https://github.com/cmiltiadis/Steam-Zotero-translator/assets/12499359/63dd01f1-c481-49b8-8cc5-36171386bda3)
-- Search results for `Valve`. These include hardware items (e.g. *Valve Index* which will not be saved if selected. 
+- Search results for `Valve`. These include hardware items (e.g. *Valve Index*) which will not be saved if selected. 
   ![image](https://github.com/cmiltiadis/Steam-Zotero-translator/assets/12499359/d477d5fe-1804-497e-93d0-ba31ac6e08f4)
 - Below is a case of a Steam page of a Publisher. The same applies to pages of Developers. 
   ![image](https://github.com/cmiltiadis/Steam-Zotero-translator/assets/12499359/d581aff0-54e9-416e-9958-00f6a56fe89d)
@@ -72,7 +72,7 @@ Install:
 
 # Sample references 
 
-The references below make use of the citation style  *Chicago Manual of Style 17th Ed. (not)*, and include cases such as multiple platforms, multiple developers, multiple publishers, and a 'coming soon' release date. 
+The references below make use of the citation style  *Chicago Manual of Style 17th Edition (note)*, and include cases such as multiple platforms, multiple developers, multiple publishers, and a 'coming soon' release date. 
 
 - Arsi ‘Hakita’ Patala. ‘ULTRAKILL’. Windows. New Blood Interactive, 3 September 2020. https://store.steampowered.com/app/1229490/ULTRAKILL/.
 - Crystal Dynamics, Eidos-Montréal, Feral Interactive (Mac), Feral Interactive (Linux), and Nixxes. ‘Rise of the Tomb Raider™’. Windows, macOS, SteamOS + Linux. Crystal Dynamics, Feral Interactive (Mac), Feral Interactive (Linux), 9 February 2016. https://store.steampowered.com/app/391220/Rise_of_the_Tomb_Raider/.
